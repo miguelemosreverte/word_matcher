@@ -45,7 +45,7 @@ abstract class WordMatcherSpec(matcher: WordMatcher) {
     assertEquals(
       Left(
         Timeout(
-          2005
+          0
         )
       ),
       result
