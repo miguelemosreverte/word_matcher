@@ -34,11 +34,16 @@ case object Mock extends WordMatcher {
               )
             )
       }
-      .reduceLeft[Either[Status.Failure, Status.Success]] {
+      .takeWhile {
+        case Right(value) => true
+        case Left(value)  => false
+      }
+      .foldLeft[Either[Status.Failure, Status.Success]](
+        Left(Timeout(0))
+      ) {
         case (Left(a), Left(b)) =>
           (a, b) match {
             case (a: Timeout, b: Timeout) =>
-              //println(a, b)
               if (a.byteCount > b.byteCount) Left(a) else Left(b)
             case (a: Timeout, b: Status.NotFound) => Left(a)
             case (a: Status.NotFound, b: Timeout) => Left(b)
@@ -49,6 +54,7 @@ case object Mock extends WordMatcher {
         case (Left(a), r @ Right(b))        => r
         case (r1 @ Right(a), r2 @ Right(b)) => r1
       }
+
   }
 
 }
