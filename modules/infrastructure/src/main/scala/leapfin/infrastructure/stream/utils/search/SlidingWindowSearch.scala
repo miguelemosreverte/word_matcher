@@ -3,12 +3,6 @@ package leapfin.infrastructure.stream.utils.search
 import akka.actor.ActorSystem
 import akka.stream._
 import akka.stream.scaladsl._
-import leapfin.infrastructure.stream.utils.search.logger.algebra.Logger
-import leapfin.infrastructure.stream.utils.search.logger.domain.MatchResultByThread
-import leapfin.infrastructure.stream.utils.search.logger.interpreter.{
-  EmptyLogger,
-  SuccessLoger
-}
 import leapfin.lemos.word_matcher.Status.{NotFound, Success}
 import leapfin.lemos.word_matcher.algebra.WordMatcher.MatchResult
 
@@ -18,7 +12,7 @@ import scala.language.postfixOps
 
 class SlidingWindowSearch[A](
     verbose: Boolean = true,
-    logger: Logger = new SuccessLoger
+    logger: MatchResult => Unit
 )(implicit system: ActorSystem, ec: ExecutionContext) {
 
   def search(
@@ -68,10 +62,7 @@ class SlidingWindowSearch[A](
         }
         .map { result =>
           if (verbose)
-            this.logger feed MatchResultByThread(
-              result,
-              Thread.currentThread().getId
-            )
+            this logger result
           result
         }
         .takeWhile(
@@ -82,7 +73,6 @@ class SlidingWindowSearch[A](
         .run()
 
     status foreach { _ =>
-      this.logger.printSummarization
       killswitch.shutdown()
     }
 
