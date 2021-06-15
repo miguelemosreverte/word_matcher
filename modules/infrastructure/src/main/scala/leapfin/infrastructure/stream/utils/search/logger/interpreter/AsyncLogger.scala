@@ -45,7 +45,9 @@ object AsyncLogger {
         }
 
       case PrintToConsole =>
-        writeStatuses(statuses.values)
+        writeStatuses(
+          statuses.values
+        )
 
     }
   }

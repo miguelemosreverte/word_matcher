@@ -14,7 +14,7 @@ class WordMatcherSpec
     extends algebra.WordMatcherSpec(
       new WordMatcher(
         config = Config(),
-        logger = new SuccessLoger
+        logger = matchResult => ()
       )(
         WordMatcherSpec.system,
         WordMatcherSpec.executionContext
