@@ -1,7 +1,7 @@
 package leapfin.lemos.word_matcher
 
 import akka.actor.ActorSystem
-import leapfin.infrastructure.stream.utils.search.Logger
+import leapfin.infrastructure.stream.utils.search.logger.interpreter.AsyncLogger
 import leapfin.lemos.word_matcher.interpreter.{Config, WordMatcher}
 
 import java.util.concurrent.Executors
@@ -89,7 +89,7 @@ object Main extends App {
         .concat(LazyList.from(config.searchWord.iterator))
         .concat(continually('-'))
 
-    new WordMatcher(config, Logger.asyncLogger(system)) matchWord (
+    new WordMatcher(config, AsyncLogger.start) matchWord (
       pseudorandomStreamOfCharacters(config.padding),
       config.searchWord,
       config.timeout seconds

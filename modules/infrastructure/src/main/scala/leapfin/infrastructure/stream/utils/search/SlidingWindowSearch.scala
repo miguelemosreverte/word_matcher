@@ -3,10 +3,11 @@ package leapfin.infrastructure.stream.utils.search
 import akka.actor.ActorSystem
 import akka.stream._
 import akka.stream.scaladsl._
-import leapfin.infrastructure.stream.utils.search.SlidingWindowSearch.{
-  Logger,
-  MatchResultByThread,
-  successLogger
+import leapfin.infrastructure.stream.utils.search.logger.algebra.Logger
+import leapfin.infrastructure.stream.utils.search.logger.domain.MatchResultByThread
+import leapfin.infrastructure.stream.utils.search.logger.interpreter.{
+  EmptyLogger,
+  SuccessLoger
 }
 import leapfin.lemos.word_matcher.Status.{NotFound, Success}
 import leapfin.lemos.word_matcher.algebra.WordMatcher.MatchResult
@@ -17,7 +18,7 @@ import scala.language.postfixOps
 
 class SlidingWindowSearch[A](
     verbose: Boolean = true,
-    logger: Logger = successLogger
+    logger: Logger = new SuccessLoger
 )(implicit system: ActorSystem, ec: ExecutionContext) {
 
   def search(
@@ -88,33 +89,4 @@ class SlidingWindowSearch[A](
     Await.result(status, Duration.Inf)
   }
 
-}
-
-object SlidingWindowSearch {
-
-  type ThreadId = Long
-  case class MatchResultByThread(matchResult: MatchResult, threadId: ThreadId)
-  trait Logger {
-    def feed: MatchResultByThread => Unit
-    def printSummarization: Unit
-  }
-  val emptyLogger: Logger = {
-    class EmptyLogger extends Logger {
-      def printSummarization: Unit = ()
-
-      def feed = _ => ()
-    }
-    new EmptyLogger
-  }
-  val successLogger: Logger = {
-    class SuccessLoger extends Logger {
-      def printSummarization: Unit = println("Done!")
-      def feed = {
-        case MatchResultByThread(Left(notFound), threadId) => ()
-        case MatchResultByThread(Right(success), threadId) =>
-          println(s"Found it! -- $success")
-      }
-    }
-    new SuccessLoger
-  }
 }

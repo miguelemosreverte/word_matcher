@@ -1,7 +1,7 @@
 package leapfin.lemos.word_matcher.spec
 
 import akka.actor.ActorSystem
-import leapfin.infrastructure.stream.utils.search.SlidingWindowSearch.successLogger
+import leapfin.infrastructure.stream.utils.search.logger.interpreter.SuccessLoger
 import leapfin.lemos.word_matcher
 import leapfin.lemos.word_matcher.algebra
 import leapfin.lemos.word_matcher.interpreter.{Config, WordMatcher}
@@ -14,7 +14,7 @@ class WordMatcherSpec
     extends algebra.WordMatcherSpec(
       new WordMatcher(
         config = Config(),
-        logger = successLogger
+        logger = new SuccessLoger
       )(
         WordMatcherSpec.system,
         WordMatcherSpec.executionContext
