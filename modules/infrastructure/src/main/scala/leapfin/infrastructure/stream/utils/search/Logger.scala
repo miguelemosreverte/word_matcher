@@ -13,25 +13,24 @@ import collection.mutable.{Map => MutableMap}
 import scala.concurrent.duration.{DurationDouble, DurationInt}
 import scala.language.postfixOps
 object Logger {
-  def summarizationLog(implicit
+
+  def asyncLogger(implicit
       system: ActorSystem
-  ): () => SlidingWindowSearchLogger =
-    () => {
-      val logger = system.actorOf(Props(new Logger))
-      (matchResult: MatchResultByThread) => logger ! matchResult
+  ) = {
+    val logger = system.actorOf(Props(new Logger))
+    class AsyncLogger extends SlidingWindowSearchLogger {
+      def feed = logger ! _
+      def printSummarization = logger ! PrintToConsole
     }
+    new AsyncLogger
+  }
+
   case object PrintToConsole
 
 }
 
 class Logger extends Actor {
   var statuses: MutableMap[ThreadId, Status] = MutableMap.empty
-  this.context.system.getScheduler.scheduleAtFixedRate(
-    initialDelay = 0 second,
-    interval = 0.5 seconds,
-    receiver = self,
-    message = PrintToConsole
-  )(this.context.dispatcher)
 
   override def receive: Receive = {
     case MatchResultByThread(status, threadId) =>
@@ -50,7 +49,6 @@ class Logger extends Actor {
       }
 
     case PrintToConsole =>
-      print("\u001b[2J") // clear console
       println(statuses.mkString("\n"))
   }
 }
