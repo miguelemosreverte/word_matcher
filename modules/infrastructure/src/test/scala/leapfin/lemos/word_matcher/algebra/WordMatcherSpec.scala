@@ -1,15 +1,12 @@
 package leapfin.lemos.word_matcher.algebra
 
 import leapfin.lemos.word_matcher.Dataset._
-import leapfin.lemos.word_matcher.Mock
-import leapfin.lemos.word_matcher.algebra.Status.Timeout
-import leapfin.lemos.word_matcher.algebra._
+import leapfin.lemos.word_matcher.Status.{NotFound}
 import org.junit.Assert._
 import org.junit.Test
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.{Failure, Try}
 
 abstract class WordMatcherSpec(matcher: WordMatcher) {
 
@@ -44,8 +41,8 @@ abstract class WordMatcherSpec(matcher: WordMatcher) {
 
     assertEquals(
       Left(
-        Timeout(
-          2005
+        NotFound(
+          0
         )
       ),
       result

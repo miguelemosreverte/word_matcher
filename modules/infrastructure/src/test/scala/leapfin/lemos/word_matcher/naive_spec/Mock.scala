@@ -1,6 +1,8 @@
-package leapfin.lemos.word_matcher
+package leapfin.lemos.word_matcher.naive_spec
 
-import leapfin.lemos.word_matcher.algebra.Status._
+import leapfin.lemos.word_matcher.Status
+import leapfin.lemos.word_matcher.Status.NotFound
+import leapfin.lemos.word_matcher.algebra.WordMatcher.MatchResult
 import leapfin.lemos.word_matcher.algebra.{WordMatcher, _}
 
 import scala.concurrent.duration.FiniteDuration
@@ -12,7 +14,7 @@ case object Mock extends WordMatcher {
       stream: LazyList[Char],
       word: String,
       timeout: FiniteDuration
-  ): Either[Status.Failure, Status.Success] = {
+  ): MatchResult = {
     val deadline = timeout fromNow
 
     stream.zipWithIndex
@@ -24,7 +26,7 @@ case object Mock extends WordMatcher {
               .mkString == word
 
           if (deadline.isOverdue || !`found the word`)
-            Left(Status.Timeout(byteIndex))
+            Left(Status.NotFound(byteIndex))
           else if (!`found the word`) Left(Status.NotFound(byteIndex))
           else
             Right(
@@ -34,14 +36,15 @@ case object Mock extends WordMatcher {
               )
             )
       }
-      .reduceLeft[Either[Status.Failure, Status.Success]] {
+      .takeWhile {
+        case Right(value) => true
+        case Left(value)  => false
+      }
+      .foldLeft[MatchResult](
+        Left(NotFound(0))
+      ) {
         case (Left(a), Left(b)) =>
           (a, b) match {
-            case (a: Timeout, b: Timeout) =>
-              //println(a, b)
-              if (a.byteCount > b.byteCount) Left(a) else Left(b)
-            case (a: Timeout, b: Status.NotFound) => Left(a)
-            case (a: Status.NotFound, b: Timeout) => Left(b)
             case (a: Status.NotFound, b: Status.NotFound) =>
               if (a.byteCount > b.byteCount) Left(a) else Left(b)
           }
@@ -49,6 +52,7 @@ case object Mock extends WordMatcher {
         case (Left(a), r @ Right(b))        => r
         case (r1 @ Right(a), r2 @ Right(b)) => r1
       }
+
   }
 
 }
