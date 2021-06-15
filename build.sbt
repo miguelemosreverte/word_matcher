@@ -13,7 +13,6 @@ lazy val `application` =
     "."
   ) / "modules" / "application" dependsOn (`domain` % "compile->compile;test->test",
   `infrastructure` % "compile->compile;test->test"))
-
 lazy val `infrastructure` = project in file(".") / "modules" / "infrastructure"
 
 ThisBuild / Test / testOptions += Tests.Argument("-oD")
