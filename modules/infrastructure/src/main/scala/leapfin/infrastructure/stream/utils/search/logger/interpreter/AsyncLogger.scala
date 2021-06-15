@@ -8,6 +8,7 @@ import leapfin.infrastructure.stream.utils.search.logger.domain.{
 }
 import leapfin.infrastructure.stream.utils.search.logger.interpreter.AsyncLogger.PrintToConsole
 import leapfin.lemos.word_matcher.Status
+import leapfin.lemos.word_matcher.status.Writeable.writeStatuses
 
 import scala.collection.mutable.{Map => MutableMap}
 import scala.language.postfixOps
@@ -44,12 +45,7 @@ object AsyncLogger {
         }
 
       case PrintToConsole =>
-        val format = "%-40s%-40s%-40s %n"
-        (Seq(
-          Status.Title()
-        ) ++ statuses.values).map { status =>
-          System.out.printf(format, Status.statusPrinter(status): _*)
-        }
+        writeStatuses(statuses.values)
 
     }
   }
