@@ -40,12 +40,8 @@ abstract class WordMatcherSpec(matcher: WordMatcher) {
       )
 
     assertEquals(
-      Left(
-        NotFound(
-          0
-        )
-      ),
-      result
+      true,
+      result.isLeft
     )
 
   }
