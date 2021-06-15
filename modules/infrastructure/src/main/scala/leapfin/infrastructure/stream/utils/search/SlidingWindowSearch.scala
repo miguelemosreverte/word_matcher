@@ -67,7 +67,7 @@ class SlidingWindowSearch[A](
         }
         .map { result =>
           if (verbose)
-            this logger MatchResultByThread(
+            this.logger feed MatchResultByThread(
               result,
               Thread.currentThread().getId
             )
@@ -81,6 +81,7 @@ class SlidingWindowSearch[A](
         .run()
 
     status foreach { _ =>
+      this.logger.printSummarization
       killswitch.shutdown()
     }
 
@@ -93,11 +94,27 @@ object SlidingWindowSearch {
 
   type ThreadId = Long
   case class MatchResultByThread(matchResult: MatchResult, threadId: ThreadId)
-  type Logger = MatchResultByThread => Unit
-  val emptyLogger: Logger = _ => ()
+  trait Logger {
+    def feed: MatchResultByThread => Unit
+    def printSummarization: Unit
+  }
+  val emptyLogger: Logger = {
+    class EmptyLogger extends Logger {
+      def printSummarization: Unit = ()
+
+      def feed = _ => ()
+    }
+    new EmptyLogger
+  }
   val successLogger: Logger = {
-    case MatchResultByThread(Left(notFound), threadId) => ()
-    case MatchResultByThread(Right(success), threadId) =>
-      println(s"Found it! -- $success")
+    class SuccessLoger extends Logger {
+      def printSummarization: Unit = println("Done!")
+      def feed = {
+        case MatchResultByThread(Left(notFound), threadId) => ()
+        case MatchResultByThread(Right(success), threadId) =>
+          println(s"Found it! -- $success")
+      }
+    }
+    new SuccessLoger
   }
 }
