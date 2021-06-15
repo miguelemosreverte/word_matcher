@@ -2,7 +2,6 @@ package leapfin.lemos.word_matcher.interpreter
 
 import akka.actor.ActorSystem
 import leapfin.infrastructure.stream.utils.search.SlidingWindowSearch
-import leapfin.infrastructure.stream.utils.search.SlidingWindowSearch._
 import leapfin.infrastructure.stream.utils.search.logger.algebra.Logger
 import leapfin.infrastructure.stream.utils.search.logger.interpreter.SuccessLoger
 import leapfin.lemos.word_matcher.Status
@@ -15,7 +14,7 @@ import scala.language.postfixOps
 
 class WordMatcher(
     config: Config,
-    logger: Logger = new SuccessLoger
+    logger: MatchResult => Unit
 )(implicit system: ActorSystem, ec: ExecutionContext)
     extends WordMatcherContract {
 
@@ -34,12 +33,7 @@ class WordMatcher(
       predicate = _.map(_._1).mkString == searchWord,
       stream,
       timeout
-    ) match {
-      case Left(value) =>
-        Left(Status.NotFound(value.byteCount))
-      case Right(value) =>
-        Right(Status.Success(value.elapsedTime, value.byteCount))
-    }
+    )
   }
 
 }
