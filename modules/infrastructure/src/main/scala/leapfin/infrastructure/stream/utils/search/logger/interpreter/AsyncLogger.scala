@@ -44,7 +44,13 @@ object AsyncLogger {
         }
 
       case PrintToConsole =>
-        println(statuses.mkString("\n"))
+        val format = "%-40s%-40s%-40s %n"
+        (Seq(
+          Status.Title()
+        ) ++ statuses.values).map { status =>
+          System.out.printf(format, Status.statusPrinter(status): _*)
+        }
+
     }
   }
 
