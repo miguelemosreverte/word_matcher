@@ -56,6 +56,13 @@ object AsyncLogger {
             .reverse
         )
 
+        print(
+          s"${statuses.values.collect {
+            case Status.Success(elapsedTime, byteCount) =>
+              (byteCount.toDouble / 1000) / elapsedTime.toSeconds
+          }.sum / statuses.values.toSeq.length} MB/s was the average speed per worker"
+        )
+
     }
   }
 
