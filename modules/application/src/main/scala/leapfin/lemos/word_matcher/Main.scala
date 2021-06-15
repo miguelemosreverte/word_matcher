@@ -63,7 +63,7 @@ object Main extends App {
         help("help"),
         note(
           """
-            |leapfin.lemos.word_matcher.interpreter.leapfin.lemos.word_matcher.algebra.WordMatcher:
+            |WordMatcher:
             |    Generates pseudo-random streams of characters 
             |    and distributes the task of finding a string 
             |    to a set of workers with a timeout
