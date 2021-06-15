@@ -3,6 +3,8 @@ package leapfin.lemos.word_matcher.interpreter
 import akka.actor.ActorSystem
 import leapfin.infrastructure.stream.utils.search.SlidingWindowSearch
 import leapfin.infrastructure.stream.utils.search.SlidingWindowSearch._
+import leapfin.infrastructure.stream.utils.search.logger.algebra.Logger
+import leapfin.infrastructure.stream.utils.search.logger.interpreter.SuccessLoger
 import leapfin.lemos.word_matcher.Status
 import leapfin.lemos.word_matcher.algebra.WordMatcher.MatchResult
 import leapfin.lemos.word_matcher.algebra.{WordMatcher => WordMatcherContract}
@@ -13,7 +15,7 @@ import scala.language.postfixOps
 
 class WordMatcher(
     config: Config,
-    logger: Logger = successLogger
+    logger: Logger = new SuccessLoger
 )(implicit system: ActorSystem, ec: ExecutionContext)
     extends WordMatcherContract {
 
