@@ -1,11 +1,13 @@
 package leapfin.lemos.word_matcher
 
 import akka.actor.ActorSystem
+import leapfin.infrastructure.stream.utils.search.Logger
 import leapfin.lemos.word_matcher.interpreter.{Config, WordMatcher}
+
 import java.util.concurrent.Executors
 import scala.collection.immutable.LazyList.continually
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration.{Duration, DurationInt}
 import scala.language.postfixOps
 
 object Main extends App {
@@ -87,14 +89,23 @@ object Main extends App {
         .concat(LazyList.from(config.searchWord.iterator))
         .concat(continually('-'))
 
-    new WordMatcher(config) matchWord (
+    new WordMatcher(config, Logger.summarizationLog(system)()) matchWord (
       pseudorandomStreamOfCharacters(config.padding),
       config.searchWord,
       config.timeout seconds
     )
 
-    fixedThreadPool.shutdown()
-    system.terminate()
+    val f: Future[Unit] = Future {
+      Thread.sleep(10000)
+    }
+
+    val f2 = f map { s =>
+      fixedThreadPool.shutdown()
+      system.terminate()
+    }
+
+    Await.ready(f2, Duration.Inf)
+
   }
 
   showMenu map word_matcher

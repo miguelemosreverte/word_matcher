@@ -5,6 +5,7 @@ import akka.stream._
 import akka.stream.scaladsl._
 import leapfin.infrastructure.stream.utils.search.SlidingWindowSearch.{
   Logger,
+  MatchResultByThread,
   successLogger
 }
 import leapfin.lemos.word_matcher.Status.{NotFound, Success}
@@ -46,7 +47,7 @@ class SlidingWindowSearch[A](
         .zipWithIndex
         .viaMat(KillSwitches.single)(Keep.right)
         .sliding(windowSize, windowStep)
-        .mapAsync(parallelism) { window =>
+        .mapAsyncUnordered(parallelism) { window =>
           Future {
             if (predicate(window)) {
               Right(
@@ -65,7 +66,11 @@ class SlidingWindowSearch[A](
           }
         }
         .map { result =>
-          if (verbose) this logger result
+          if (verbose)
+            this logger MatchResultByThread(
+              result,
+              Thread.currentThread().getId
+            )
           result
         }
         .takeWhile(
@@ -86,10 +91,13 @@ class SlidingWindowSearch[A](
 
 object SlidingWindowSearch {
 
-  type Logger = MatchResult => Unit
+  type ThreadId = Long
+  case class MatchResultByThread(matchResult: MatchResult, threadId: ThreadId)
+  type Logger = MatchResultByThread => Unit
   val emptyLogger: Logger = _ => ()
   val successLogger: Logger = {
-    case Left(notFound) => ()
-    case Right(success) => println(s"Found it! -- $success")
+    case MatchResultByThread(Left(notFound), threadId) => ()
+    case MatchResultByThread(Right(success), threadId) =>
+      println(s"Found it! -- $success")
   }
 }

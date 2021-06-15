@@ -23,6 +23,8 @@ class WordMatcher(
       timeout: FiniteDuration
   ): MatchResult = {
     new SlidingWindowSearch[Char](
+      config.verbose,
+      logger
     ).search(
       windowSize = searchWord.length,
       windowStep = 1,
