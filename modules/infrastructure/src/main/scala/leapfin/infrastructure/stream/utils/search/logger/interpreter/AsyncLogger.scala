@@ -46,7 +46,14 @@ object AsyncLogger {
 
       case PrintToConsole =>
         writeStatuses(
-          statuses.values
+          statuses.values.toSeq
+            .sortBy[Long] {
+              case Status.Success(elapsedTime, byteCount) =>
+                elapsedTime.toMillis
+              case Status.NotFound(byteCount) =>
+                0L
+            }
+            .reverse
         )
 
     }
