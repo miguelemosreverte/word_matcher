@@ -1,4 +1,4 @@
-package leapfin.lemos.word_matcher.algebra
+package leapfin.lemos.word_matcher
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -13,13 +13,8 @@ object Status {
       byteCount: BigInt
   ) extends Status
 
-  sealed trait Failure extends Status
-  case class Timeout(
-      byteCount: BigInt
-  ) extends Failure
-
   case class NotFound(
       byteCount: BigInt
-  ) extends Failure
+  ) extends Status
 
 }

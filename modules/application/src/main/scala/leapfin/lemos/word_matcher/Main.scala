@@ -2,7 +2,6 @@ package leapfin.lemos.word_matcher
 
 import akka.actor.ActorSystem
 import leapfin.lemos.word_matcher.interpreter.{Config, WordMatcher}
-
 import java.util.concurrent.Executors
 import scala.collection.immutable.LazyList.continually
 import scala.concurrent.ExecutionContext
@@ -64,7 +63,7 @@ object Main extends App {
         help("help"),
         note(
           """
-            |leapfin.lemos.word_matcher.interpreter.leapfin.lemos.word_matcher.WordMatcher:
+            |leapfin.lemos.word_matcher.interpreter.leapfin.lemos.word_matcher.algebra.WordMatcher:
             |    Generates pseudo-random streams of characters 
             |    and distributes the task of finding a string 
             |    to a set of workers with a timeout

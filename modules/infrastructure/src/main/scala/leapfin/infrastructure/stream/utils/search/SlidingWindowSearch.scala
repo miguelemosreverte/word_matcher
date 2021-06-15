@@ -1,11 +1,17 @@
 package leapfin.infrastructure.stream.utils.search
 
 import akka.actor.ActorSystem
-import akka.stream.scaladsl._
 import akka.stream._
-import SlidingWindowSearch._
-import scala.concurrent.duration._
+import akka.stream.scaladsl._
+import leapfin.infrastructure.stream.utils.search.SlidingWindowSearch.{
+  Logger,
+  successLogger
+}
+import leapfin.lemos.word_matcher.Status.{NotFound, Success}
+import leapfin.lemos.word_matcher.algebra.WordMatcher.MatchResult
+
 import scala.concurrent._
+import scala.concurrent.duration._
 import scala.language.postfixOps
 
 class SlidingWindowSearch[A](
@@ -80,20 +86,6 @@ class SlidingWindowSearch[A](
 
 object SlidingWindowSearch {
 
-  sealed trait Status {
-    val byteCount: BigInt
-  }
-
-  case class Success(
-      elapsedTime: FiniteDuration,
-      byteCount: BigInt
-  ) extends Status
-
-  case class NotFound(
-      byteCount: BigInt
-  ) extends Status
-
-  type MatchResult = Either[NotFound, Success]
   type Logger = MatchResult => Unit
   val emptyLogger: Logger = _ => ()
   val successLogger: Logger = {
