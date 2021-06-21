@@ -1,9 +1,10 @@
 package leapfin.lemos.word_matcher
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Terminated}
 import leapfin.infrastructure.stream.utils.search.logger.domain.MatchResultByThread
 import leapfin.infrastructure.stream.utils.search.logger.interpreter.AsyncLogger
 import leapfin.lemos.word_matcher.interpreter.{Config, WordMatcher}
+import zio.{ExitCode, IO, Task, URIO, ZEnv, ZIO}
 
 import java.util.concurrent.Executors
 import scala.collection.immutable.LazyList.continually
@@ -11,10 +12,20 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.{Duration, DurationInt}
 import scala.language.postfixOps
 import scala.util.Random
+import zio.console._
 
-object Main extends App {
+object Main extends zio.App {
 
-  def showMenu: Option[Config] = {
+
+  def run(args: List[String]) = {
+    (for {
+      _    <- putStrLn(s"Welcome to ZIO.")
+      done <- ZIO.fromOption[Config](showMenu(args)).map(word_matcher)
+    } yield done
+    ).exitCode
+  }
+
+  def showMenu(implicit args: List[String]): Option[Config] = {
     import scopt.OParser
     val builder = OParser.builder[Config]
     val menu = {
@@ -68,8 +79,8 @@ object Main extends App {
         note(
           """
             |WordMatcher:
-            |    Generates pseudo-random streams of characters 
-            |    and distributes the task of finding a string 
+            |    Generates pseudo-random streams of characters
+            |    and distributes the task of finding a string
             |    to a set of workers with a timeout
             |    """.stripMargin
         )
@@ -120,6 +131,7 @@ object Main extends App {
           config.timeout seconds
         )
 
+    println("HEY HEY")
     val processAllStreams = Future
       .sequence(
         streams.zipWithIndex
@@ -141,6 +153,5 @@ object Main extends App {
     system.terminate()
   }
 
-  showMenu map word_matcher
 
 }
