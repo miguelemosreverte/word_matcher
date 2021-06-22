@@ -1,7 +1,8 @@
 package leapfin.lemos.word_matcher.algebra
 
 import leapfin.lemos.word_matcher.Dataset._
-import leapfin.lemos.word_matcher.Status.{NotFound}
+import leapfin.lemos.word_matcher.Status.NotFound
+import leapfin.lemos.word_matcher.algebra.WordMatcher.MatchResult
 import org.junit.Assert._
 import org.junit.Test
 
@@ -20,12 +21,12 @@ abstract class WordMatcherSpec(matcher: WordMatcher) {
         timeout
       )
 
-    result.map { r =>
+    result.map(_ map (_ map { r =>
       assertEquals(
         BigInt(1000),
         r.byteCount
       )
-    }
+    }))
 
   }
 
@@ -39,9 +40,13 @@ abstract class WordMatcherSpec(matcher: WordMatcher) {
         timeout
       )
 
-    assertEquals(
-      true,
-      result.isLeft
+    result.map(
+      _ map (r =>
+        assertEquals(
+          true,
+          r.isLeft
+        )
+      )
     )
 
   }

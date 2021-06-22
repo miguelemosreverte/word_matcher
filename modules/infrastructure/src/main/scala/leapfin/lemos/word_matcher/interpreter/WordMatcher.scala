@@ -15,9 +15,9 @@ import scala.language.postfixOps
 class WordMatcher(
     config: Config = Config(),
     logger: MatchResult => Unit = _ => ()
-){
+) extends WordMatcherContract {
 
-  def matchWord(
+  override def matchWord(
       stream: LazyList[Char],
       searchWord: String,
       timeout: FiniteDuration

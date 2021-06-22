@@ -4,6 +4,7 @@ import leapfin.lemos.word_matcher.Status
 import leapfin.lemos.word_matcher.Status.NotFound
 import leapfin.lemos.word_matcher.algebra.WordMatcher.MatchResult
 import leapfin.lemos.word_matcher.algebra.{WordMatcher, _}
+import zio.{Clock, Has, ZIO}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
@@ -14,10 +15,10 @@ case object Mock extends WordMatcher {
       stream: LazyList[Char],
       word: String,
       timeout: FiniteDuration
-  ): MatchResult = {
+  ): ZIO[Any with Has[Clock], Throwable, Option[MatchResult]] = {
     val deadline = timeout fromNow
 
-    stream.zipWithIndex
+    val result = stream.zipWithIndex
       .map {
         case (character, byteIndex) =>
           val `found the word` =
@@ -52,6 +53,12 @@ case object Mock extends WordMatcher {
         case (Left(a), r @ Right(b))        => r
         case (r1 @ Right(a), r2 @ Right(b)) => r1
       }
+
+    zio.stream.ZStream
+      .fromEffect(
+        ZIO.succeed(result)
+      )
+      .runHead
 
   }
 
