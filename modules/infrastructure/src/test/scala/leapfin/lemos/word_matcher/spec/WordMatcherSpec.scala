@@ -10,13 +10,11 @@ object WordMatcherSpec {
   lazy val system = ActorSystem("WordMatcherSpec")
   lazy val executionContext = system.dispatcher
 }
-class WordMatcherSpec
+class WordMatcherSpec/*
     extends algebra.WordMatcherSpec(
       new WordMatcher(
         config = Config(),
         logger = matchResult => ()
-      )(
-        WordMatcherSpec.system,
-        WordMatcherSpec.executionContext
       )
     )
+*/

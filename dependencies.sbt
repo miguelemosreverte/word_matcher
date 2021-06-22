@@ -8,6 +8,11 @@ ThisBuild / libraryDependencies +=
 ThisBuild / libraryDependencies +=
   "com.typesafe.akka" %% "akka-actor" % "2.6.14"
 
-ThisBuild / libraryDependencies += "dev.zio" %% "zio" % "1.0.9"
 
-ThisBuild / libraryDependencies += "dev.zio" %% "zio-streams" % "1.0.9"
+
+ThisBuild / libraryDependencies += "dev.zio" %% "zio" % "1.0.9+122-c5b12710-SNAPSHOT"
+
+ThisBuild / libraryDependencies += "dev.zio" %% "zio-streams" % "1.0.9+122-c5b12710-SNAPSHOT"
+
+ThisBuild / libraryDependencies += "dev.zio" %% "zio-test" % "1.0.9+122-c5b12710-SNAPSHOT"
+

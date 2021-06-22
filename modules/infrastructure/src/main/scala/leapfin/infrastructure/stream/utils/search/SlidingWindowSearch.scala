@@ -5,6 +5,9 @@ import akka.stream._
 import akka.stream.scaladsl._
 import leapfin.lemos.word_matcher.Status.{NotFound, Success}
 import leapfin.lemos.word_matcher.algebra.WordMatcher.MatchResult
+import zio.{Chunk, Clock, Exit, ExitCode, Has, URIO, ZIO}
+import zio.ZIO.never
+import zio.stream.experimental.ZStream
 
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -12,8 +15,8 @@ import scala.language.postfixOps
 
 class SlidingWindowSearch[A](
     verbose: Boolean = true,
-    logger: MatchResult => Unit
-)(implicit system: ActorSystem, ec: ExecutionContext) {
+    logger: MatchResult => Unit = _ => ()
+) {
 
   def search(
       windowSize: Int,
@@ -22,7 +25,7 @@ class SlidingWindowSearch[A](
       predicate: Seq[(A, Long)] => Boolean,
       stream: LazyList[A],
       timeout: FiniteDuration
-  ): MatchResult = {
+  ): ZIO[Any with Has[Clock], Throwable, Option[MatchResult]] = {
     val deadline = timeout fromNow
 
     def `get first index of window` =
@@ -33,50 +36,37 @@ class SlidingWindowSearch[A](
         }
     def `get the time it took to finish` = deadline.time
 
-    val (
-      killswitch: UniqueKillSwitch,
-      status: Future[MatchResult]
-    ) =
-      Source
-        .fromIterator(() => stream.iterator)
-        .zipWithIndex
-        .viaMat(KillSwitches.single)(Keep.right)
-        .sliding(windowSize, windowStep)
-        .mapAsyncUnordered(parallelism) { window =>
-          Future {
-            if (predicate(window)) {
-              Right(
-                Success(
-                  elapsedTime = `get the time it took to finish`,
-                  byteCount = `get first index of window`(window)
-                )
-              )
-            } else {
-              Left(
-                NotFound(
-                  byteCount = `get first index of window`(window)
-                )
-              )
-            }
-          }
-        }
-        .map { result =>
-          if (verbose)
-            this logger result
-          result
-        }
-        .takeWhile(
-          substream => substream.isLeft && deadline.hasTimeLeft,
-          inclusive = true
-        )
-        .toMat(Sink.last)(Keep.both)
-        .run()
+    ZStream
+      .fromIterator(stream.iterator)
+      .zipWithIndex
+      .grouped("Leapfn".length)
+      .map{ window =>
+        if (predicate(window)) {
+          Right(
+            Success(
+              elapsedTime = `get the time it took to finish`,
+              byteCount = `get first index of window`(window)
+            )
+          )
+        } else {
+          Left(
+            NotFound(
+              byteCount = `get first index of window`(window)
+            )
+          )
+      }}
+      .map{ result =>
+        logger(result)
+        result
+      }
+      .find {
+        case Left(value) =>  false
+        case Right(value) => true
+      }
+      .interruptAfter(zio.Duration.fromScala(timeout))
+      .runHead
 
-    status foreach { _ =>
-      killswitch.shutdown()
-    }
 
-    Await.result(status, Duration.Inf)
   }
 
 }

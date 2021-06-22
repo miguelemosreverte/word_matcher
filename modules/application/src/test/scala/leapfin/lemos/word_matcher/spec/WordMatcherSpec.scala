@@ -12,7 +12,7 @@ object WordMatcherSpec {
 class WordMatcherSpec
     extends algebra.WordMatcherSpec(
       new WordMatcher(config = Config(), logger = _ => ())(
-        WordMatcherSpec.system,
+        //WordMatcherSpec.system,
         WordMatcherSpec.executionContext
       )
     )

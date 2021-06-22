@@ -13,16 +13,15 @@ import scala.concurrent.duration.FiniteDuration
 import scala.language.postfixOps
 
 class WordMatcher(
-    config: Config,
-    logger: MatchResult => Unit
-)(implicit system: ActorSystem, ec: ExecutionContext)
-    extends WordMatcherContract {
+    config: Config = Config(),
+    logger: MatchResult => Unit = _ => ()
+){
 
-  override def matchWord(
+  def matchWord(
       stream: LazyList[Char],
       searchWord: String,
       timeout: FiniteDuration
-  ): MatchResult = {
+  ) = {
     new SlidingWindowSearch[Char](
       config.verbose,
       logger
